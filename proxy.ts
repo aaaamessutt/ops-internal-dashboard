@@ -4,8 +4,13 @@ import type { NextRequest } from 'next/server';
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Check if accessing dashboard routes (except login)
-  if (pathname.startsWith('/dashboard') && pathname !== '/dashboard/login') {
+  // Always allow access to login page
+  if (pathname === '/dashboard/login') {
+    return NextResponse.next();
+  }
+
+  // Check if accessing protected dashboard routes
+  if (pathname.startsWith('/dashboard')) {
     const authCookie = request.cookies.get('ops_auth');
 
     // If no auth cookie, redirect to login
@@ -13,14 +18,6 @@ export function proxy(request: NextRequest) {
       const loginUrl = new URL('/dashboard/login', request.url);
       loginUrl.searchParams.set('from', pathname);
       return NextResponse.redirect(loginUrl);
-    }
-  }
-
-  // If already logged in and trying to access login, redirect to dashboard
-  if (pathname === '/dashboard/login') {
-    const authCookie = request.cookies.get('ops_auth');
-    if (authCookie && authCookie.value === '1') {
-      return NextResponse.redirect(new URL('/dashboard', request.url));
     }
   }
 

@@ -23,14 +23,15 @@ export default function DashboardLayout({
   const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const handleLogout = async () => {
-    try {
-      await fetch('/api/auth/logout', { method: 'POST' });
-      localStorage.removeItem('ops_auth');
-      router.push('/dashboard/login');
-    } catch (error) {
-      console.error('Logout error:', error);
-    }
+  const handleLogout = () => {
+    // Clear auth cookie
+    document.cookie = 'ops_auth=; Path=/; Max-Age=0';
+
+    // Clear localStorage
+    localStorage.removeItem('ops_auth');
+
+    // Redirect to login
+    router.replace('/dashboard/login');
   };
 
   return (

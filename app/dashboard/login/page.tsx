@@ -19,33 +19,30 @@ function LoginForm() {
     setError('');
     setLoading(true);
 
-    // Demo credentials
-    if (email === 'admin@demo.com' && password === 'demo1234') {
-      // Set cookie via API route
-      try {
-        const response = await fetch('/api/auth/login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, password }),
-        });
+    try {
+      // Demo credentials check (trim and lowercase email)
+      const trimmedEmail = email.trim().toLowerCase();
+      const trimmedPassword = password.trim();
 
-        if (response.ok) {
-          // Also set localStorage flag
-          localStorage.setItem('ops_auth', '1');
+      if (trimmedEmail === 'admin@demo.com' && trimmedPassword === 'demo1234') {
+        // Set auth cookie directly
+        document.cookie = 'ops_auth=1; Path=/; Max-Age=604800; SameSite=Lax';
 
-          // Redirect to dashboard or original destination
-          const from = searchParams.get('from') || '/dashboard';
-          router.push(from);
-        } else {
-          setError('Login failed. Please try again.');
-          setLoading(false);
-        }
-      } catch (err) {
-        setError('An error occurred. Please try again.');
+        // Also set localStorage as backup
+        localStorage.setItem('ops_auth', '1');
+
+        // Small delay to ensure cookie is set
+        await new Promise(resolve => setTimeout(resolve, 100));
+
+        // Redirect to dashboard or original destination
+        const from = searchParams.get('from') || '/dashboard';
+        router.replace(from);
+      } else {
+        setError('Invalid credentials. Use admin@demo.com / demo1234');
         setLoading(false);
       }
-    } else {
-      setError('Invalid credentials. Use admin@demo.com / demo1234');
+    } catch (err) {
+      setError('An error occurred. Please try again.');
       setLoading(false);
     }
   };
